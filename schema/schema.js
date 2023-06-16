@@ -8,7 +8,8 @@ const {
     GraphQLString,
     GraphQLSchema, 
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLEnumType
 } = require('graphql');
 
 // User Type
@@ -101,13 +102,39 @@ const mutation = new GraphQLObjectType({
             }
         },
 
+        updateDish: {
+            type: dishType,
+            args: {
+                id: { type: GraphQLID },
+                name: { type: GraphQLString }, 
+                ingredients: { type: GraphQLString }, 
+                instructions: { type: GraphQLString }, 
+                time: { type: GraphQLString }, 
+            },
+            resolve(parent, args){
+                return Dish.findByIdAndUpdate(
+                    args.id,
+                    {
+                        $set: {
+                            name: args.name,
+                            ingredients: args.ingredients,
+                            instructions: args.instructions,
+                            time: args.time
+                        }
+                    }
+                )
+            }
+        },
+
         deleteDish: {
             type: dishType,
             args: {
                 id: { type: new GraphQLNonNull(GraphQLID) },
             },
             resolve(parent, args) {
-                return Dish.findByIdAndRemove(args.id);
+                Dish.findByIdAndRemove(args.id).then((res) => {
+                    return User.updateOne({ dishId: args.id }, { $pull: { dishId: args.id }})
+                })     
             }
         },
 
@@ -131,13 +158,42 @@ const mutation = new GraphQLObjectType({
             }
         },
 
+        updateUser: {
+            type: userType,
+            args: {
+                id: { type: GraphQLID },
+                name: { type: GraphQLString },
+                email: { type: GraphQLString },
+                password: { type: GraphQLString },
+            },
+            resolve(parent, args) {
+                return User.findByIdAndUpdate(
+                    args.id,
+                    {
+                        $set: {
+                            name: args.name,
+                            email: args.email,
+                            password: args.password
+                        }
+                    }
+                )
+            }
+        },
+
         deleteUser: {
             type: userType,
             args: {
                 id: { type: new GraphQLNonNull(GraphQLID) },
             },
             resolve(parent, args) {
-                return User.findByIdAndRemove(args.id);
+
+                Dish.find({ userId: args.id }).then((dishes) => {
+                    dishes.forEach((dish) => {
+                        dish.deleteOne();
+                    })
+                })
+
+                return User.findByIdAndRemove(args.id)
             }
         }
     }
