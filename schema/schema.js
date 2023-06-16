@@ -7,7 +7,8 @@ const {
     GraphQLID, 
     GraphQLString,
     GraphQLSchema, 
-    GraphQLList
+    GraphQLList,
+    GraphQLNonNull
 } = require('graphql');
 
 // User Type
@@ -18,6 +19,7 @@ const userType = new GraphQLObjectType({
         name: { type: GraphQLString },
         email: { type: GraphQLString },
         password: { type: GraphQLString },
+        dishId: { type: new GraphQLList(GraphQLString) }
         // foodId: {
         //     type: dishType,
         //     resolve(parent, args) {
@@ -32,7 +34,7 @@ const userType = new GraphQLObjectType({
 
 // Food Type
 const dishType = new GraphQLObjectType({
-    name: 'Food',
+    name: 'Dish',
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
@@ -74,6 +76,74 @@ const RootQuery = new GraphQLObjectType({
     }
 });
 
+const mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        addDish: {
+            type: dishType,
+            args: {
+               name: { type: new GraphQLNonNull(GraphQLString) }, 
+               ingredients: { type: new GraphQLNonNull(GraphQLString) }, 
+               instructions: { type: new GraphQLNonNull(GraphQLString) }, 
+               time: { type: new GraphQLNonNull(GraphQLString) }, 
+               userId: { type: new GraphQLNonNull(GraphQLID) }
+            },
+            resolve(parent, args){
+                const dish = new Dish({
+                    name: args.name,
+                    ingredients: args.ingredients,
+                    instructions: args.instructions,
+                    time: args.time,
+                    userId: args.userId
+                });
+
+                return dish.save();
+            }
+        },
+
+        deleteDish: {
+            type: dishType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLID) },
+            },
+            resolve(parent, args) {
+                return Dish.findByIdAndRemove(args.id);
+            }
+        },
+
+        addUser: {
+            type: userType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) }, 
+                email: { type: new GraphQLNonNull(GraphQLString) }, 
+                password: { type: new GraphQLNonNull(GraphQLString) }, 
+                dishId: { type: new GraphQLList(GraphQLString) }, 
+            },
+            resolve(parent, args) {
+                const user = new User({
+                    name: args.name,
+                    email: args.email,
+                    password: args.password,
+                    dishId: args.dishId,
+                });
+
+                return user.save();
+            }
+        },
+
+        deleteUser: {
+            type: userType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLID) },
+            },
+            resolve(parent, args) {
+                return User.findByIdAndRemove(args.id);
+            }
+        }
+    }
+})
+
 module.exports = new GraphQLSchema({
     query: RootQuery,
+    mutation
 })

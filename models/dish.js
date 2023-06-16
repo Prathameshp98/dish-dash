@@ -18,10 +18,9 @@ const DishSchema = new mongoose.Schema({
         required: true
     },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: true,
-        ref: 'User'
     }
-});
+},{timestamps: true});
 
 module.exports = mongoose.model('Dish', DishSchema)
