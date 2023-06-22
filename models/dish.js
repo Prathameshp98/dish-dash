@@ -5,6 +5,10 @@ const DishSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    dishImage: {
+        type: String,
+        required: true,
+    },
     ingredients: {
         type: String,
         required: true
@@ -16,6 +20,14 @@ const DishSchema = new mongoose.Schema({
     time: {
         type: String,
         required: true
+    },
+    category: {
+        type: String,
+        required: true,
+    },
+    type: {
+        type: String,
+        required: true,
     },
     userId: {
         type: String,

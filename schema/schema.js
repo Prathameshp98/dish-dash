@@ -9,7 +9,6 @@ const {
     GraphQLSchema, 
     GraphQLList,
     GraphQLNonNull,
-    GraphQLEnumType
 } = require('graphql');
 
 // User Type
@@ -39,9 +38,12 @@ const dishType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLID },
         name: { type: GraphQLString },
+        dishImage: { type: GraphQLString },
         ingredients: { type: GraphQLString },
         instructions: { type: GraphQLString },
         time: { type: GraphQLString },
+        category: { type: GraphQLString },
+        type: { type: GraphQLString },
     })
 });
 
@@ -84,17 +86,23 @@ const mutation = new GraphQLObjectType({
             type: dishType,
             args: {
                name: { type: new GraphQLNonNull(GraphQLString) }, 
+               dishImage: { type: new GraphQLNonNull(GraphQLString) }, 
                ingredients: { type: new GraphQLNonNull(GraphQLString) }, 
                instructions: { type: new GraphQLNonNull(GraphQLString) }, 
                time: { type: new GraphQLNonNull(GraphQLString) }, 
+               category: { type: new GraphQLNonNull(GraphQLString) }, 
+               type: { type: new GraphQLNonNull(GraphQLString) }, 
                userId: { type: new GraphQLNonNull(GraphQLID) }
             },
             resolve(parent, args){
                 const dish = new Dish({
                     name: args.name,
+                    dishImage: args.dishImage,
                     ingredients: args.ingredients,
                     instructions: args.instructions,
                     time: args.time,
+                    category: args.category,
+                    type: args.type,
                     userId: args.userId
                 });
 
@@ -107,9 +115,12 @@ const mutation = new GraphQLObjectType({
             args: {
                 id: { type: GraphQLID },
                 name: { type: GraphQLString }, 
+                dishImage: { type: GraphQLString }, 
                 ingredients: { type: GraphQLString }, 
                 instructions: { type: GraphQLString }, 
                 time: { type: GraphQLString }, 
+                category: { type: GraphQLString }, 
+                type: { type: GraphQLString }, 
             },
             resolve(parent, args){
                 return Dish.findByIdAndUpdate(
@@ -117,9 +128,12 @@ const mutation = new GraphQLObjectType({
                     {
                         $set: {
                             name: args.name,
+                            dishImage: args.dishImage,
                             ingredients: args.ingredients,
                             instructions: args.instructions,
-                            time: args.time
+                            time: args.time,
+                            category: args.category,
+                            type: args.type
                         }
                     }
                 )
